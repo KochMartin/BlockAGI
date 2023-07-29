@@ -11,8 +11,6 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from langchain.callbacks.base import BaseCallbackHandler
 from starlette.responses import FileResponse
-
-
 from blockagi.chains.base import BlockAGICallbackHandler
 from blockagi.schema import Objective, Findings, Narrative, Resource
 from blockagi.resource_pool import ResourcePool
@@ -117,76 +115,24 @@ def reset_state(objectives: List[str]):
 async def reset():
     reset_state()
 
-""" 
-@app.post("/api/objectives")
-async def update_objectives(objectives: List[str]):
-    # Do a reset first to clear the state
-    print("Resetting...")
-    reset_state()
-
-    print("Updating objectives...")
-    print(objectives)
-    # todo: add check if Objectives are handed over correctly or emppty
-    app.state.blockagi_state.objectives = [Objective(topic=topic, expertise=0.0) for topic in objectives]
-    
-    if app.state.blockagi_state.processing:  # Check if processing is already in progress
-        return {"message": "Processing is already in progress"}
-
-    app.state.blockagi_state.processing = True  # Set the processing flag to True
-
-    def target(**kwargs):
-        try:
-            while not app.state.blockagi_state.stop_thread:  # Check the flag here
-                run_blockagi(**kwargs)
-        except Exception as e:
-            app.state.blockagi_state.add_agent_log(f"Error: {e}")
-        app.state.blockagi_state.end_time = datetime.utcnow().isoformat()
-        app.state.blockagi_state.processing = False  # Set the processing flag to False when processing is done
-
-    threading.Thread(
-        target=target,
-        kwargs=dict(
-            agent_role=app.state.blockagi_state.agent_role,
-            openai_api_key=app.state.openai_api_key,
-            openai_model=app.state.openai_model,
-            resource_pool=app.state.resource_pool,
-            objectives=app.state.blockagi_state.objectives,
-            blockagi_callback=BlockAGICallback(app.state.blockagi_state),
-            llm_callback=LLMCallback(app.state.blockagi_state),
-            iteration_count=app.state.iteration_count,
-        ),
-    ).start() """
 
 @app.post("/api/objectives")
 async def update_objectives(objectives: List[str]):
     # Always stop the old thread if it's running
     app.state.blockagi_state.stop_thread = True
-    #wait for the thread to stop
-    #while app.state.blockagi_state.processing:
-    #    await asyncio.sleep(0.1)
-
-
-
-    print("blockagi_state before reset:", app.state.blockagi_state)
-    print( app.state.iteration_count)
-
-    # Reset the state
+  
     reset_state(objectives=objectives)
-
-    print("blockagi_state after reset:", app.state.blockagi_state)
-    print( app.state.iteration_count)
 
     # Update the objectives
     app.state.blockagi_state.objectives = [Objective(topic=topic, expertise=0.0) for topic in objectives]
 
-    # Set the processing flag to True
     app.state.blockagi_state.processing = True
 
     # Define the target function for the thread
     def target(**kwargs):
         app.state.blockagi_state.stop_thread = False # we are starting a new thread, so set the stop_thread flag to False
         try:
-            #do we really need this threading if not app.state.blockagi_state.stop_thread:  # Check the stop_thread flag
+            #do we need this? app.state.blockagi_state.stop_thread:  # Check the stop_thread flag
                 run_blockagi(**kwargs)
         except Exception as e:
             app.state.blockagi_state.add_agent_log(f"Error: {e}")
@@ -195,7 +141,7 @@ async def update_objectives(objectives: List[str]):
             app.state.blockagi_state.processing = False  # Set the processing flag to False when processing is done
             #app.state.blockagi_state.stop_thread = True  
 
-    # Start a new thread to run the blockagi
+    # Start a new thread to run the Research
     threading.Thread(
         target=target,
         kwargs=dict(
@@ -209,12 +155,6 @@ async def update_objectives(objectives: List[str]):
             iteration_count=app.state.iteration_count,
         ),
     ).start()
-
-  
-
-
-
-
 
 
 app.mount("/", StaticFiles(directory="dist"), name="dist")

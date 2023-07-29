@@ -68,27 +68,11 @@ const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
   }
 );
 
-/* function resetApp() {
-  console.log('Resetting app');
-  fetch('/api/reset', { method: 'POST' });
-//reset UI states
-  setUserObjectives('');
-  setGeneratedObjectives([]);
-  setLinks([]);
-  setAgentLogs([]);
-  setLLMLogs([]);
-  setStatus({ round: 0, step: 'PREPARING' });
-  setIsLive(false);
-  setIsDone(false);
-} 
- */
-
-
 
 
 function UserObjectivesTab() {
   const [userObjectives, setUserObjectives] = useState(''); // New state for the user objectives
-  const { setData } = useContext(DataContext); // Access setData from DataContext
+  const { setData } = useContext(DataContext); 
 
   const handleUserObjectivesChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setUserObjectives(event.target.value);
@@ -107,9 +91,6 @@ function UserObjectivesTab() {
     // Split the userObjectives string into an array of objectives
     // The objectives can be separated by newlines, semicolons, or "- " at the start of the objective
     const objectives = userObjectives.split(/[\n;]|^- /).map(s => s.trim()).filter(Boolean);
-  
-  //dont need to reset here, as the reset is being handled on main.py side.
-  //setData(initialData);    // Reset the state to its initial value
 
     const response = await fetch('/api/objectives', {
       method: 'POST',
@@ -136,7 +117,7 @@ function UserObjectivesTab() {
           onChange={handleUserObjectivesChange} 
           onKeyDown={handleKeyDown} 
           placeholder="Enter your objectives here" 
-          style={{ width: '100%', minHeight: '4em' }} // Change height to minHeight and set it to 4em
+          style={{ width: '100%', minHeight: '4em' }} 
         />
         <button 
           onClick={handleRunClick} 
@@ -161,9 +142,7 @@ function UserObjectivesTab() {
 }
 
 
-
 function ObjectivesTab() {
-  //const { objectives, generated_objectives } = useContext(DataContext);
   const { data } = useContext(DataContext);
   const { objectives, generated_objectives } = data;
 
@@ -271,7 +250,6 @@ const AgentLogEntry = memo(function _AgentLogEntry({
 });
 
 function StatusTab() {
-  //const { is_done, status, agent_logs } = useContext(DataContext);
   const { data } = useContext(DataContext);
   const { is_done, status, agent_logs } = data;
 
@@ -717,7 +695,7 @@ function Narrative() {
       const newData = await fetchData();
       if (newData) setData(newData);
       else setData((prevData) => ({ ...prevData, is_live: false }));
-    }, 200);
+    }, 500); // 500ms instead of 200ms to reduce API calls
     return () => clearInterval(interval);
   }, []);
 
@@ -730,31 +708,3 @@ function Narrative() {
     </DataContext.Provider>
   );
 } 
-
-/*
-export default function Home() {
-  const [data, setData] = useState<BlockAGIDataType>(initialData);
-
-  const resetApp = () => {
-    setData(initialData);
-  };
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const newData = await fetchData();
-      if (newData) setData(newData);
-      else setData((prevData) => ({ ...prevData, is_live: false }));
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <DataContext.Provider value={{ data, setData }}>
-      <button onClick={resetApp}>Reset App</button>
-      <main className="flex max-h-screen min-h-screen items-stretch font-sans p-8">
-        <Operation />
-        <Narrative />
-      </main>
-    </DataContext.Provider>
-  );
-} */
