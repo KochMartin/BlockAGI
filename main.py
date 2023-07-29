@@ -132,8 +132,7 @@ async def update_objectives(objectives: List[str]):
     def target(**kwargs):
         app.state.blockagi_state.stop_thread = False # we are starting a new thread, so set the stop_thread flag to False
         try:
-            while not app.state.blockagi_state.stop_thread:  # Check the stop_thread flag
-                run_blockagi(**kwargs)
+            run_blockagi(**kwargs)  # Call run_blockagi once per thread
         except Exception as e:
             app.state.blockagi_state.add_agent_log(f"Error: {e}")
         finally:

@@ -49,41 +49,44 @@ class BlockAGIChain(CustomCallbackLLMChain):
             EvaluateChain(**kwargs),
         ]
 
-    def _call(
-        self,
-        inputs: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        # Run in multiple iterations
-        for step_count in range(self.iteration_count):
-            self.fire_log(f"Beginning round {step_count+1}/{self.iteration_count}")
-            outputs = None
+def _call(
+    self,
+    inputs: Dict[str, Any],
+) -> Dict[str, Any]:
+    # Run in multiple iterations
+    for step_count in range(self.iteration_count):
+        # Check the stop_thread flag
+        if app.state.blockagi_state.stop_thread:
+            break
+        self.fire_log(f"Beginning round {step_count+1}/{self.iteration_count}")
+        outputs = None
+        # Call the callback
+        self.fire_callback(event="on_iteration_start", inputs=inputs)
+        # Run through all the chains
+        for chain in self.chains:
             # Call the callback
-            self.fire_callback(event="on_iteration_start", inputs=inputs)
-            # Run through all the chains
-            for chain in self.chains:
-                # Call the callback
-                self.fire_callback(
-                    event="on_step_start", step=chain.__class__.__name__, inputs=inputs
-                )
-                # Call the current step
-                outputs = chain(inputs=inputs)
-                # Call the callback
-                self.fire_callback(
-                    event="on_step_end",
-                    step=chain.__class__.__name__,
-                    inputs=inputs,
-                    outputs=outputs,
-                )
-                # Update the inputs for the next step
-                inputs = outputs
-
+            self.fire_callback(
+                event="on_step_start", step=chain.__class__.__name__, inputs=inputs
+            )
+            # Call the current step
+            outputs = chain(inputs=inputs)
             # Call the callback
-            self.fire_callback(event="on_iteration_end", outputs=outputs)
-            # Set the inputs for the next iteration
-            inputs = {
-                "objectives": outputs["updated_objectives"],
-                "findings": outputs["updated_findings"],
-            }
+            self.fire_callback(
+                event="on_step_end",
+                step=chain.__class__.__name__,
+                inputs=inputs,
+                outputs=outputs,
+            )
+            # Update the inputs for the next step
+            inputs = outputs
 
-        self.fire_log(f"Agent finished running ({self.iteration_count} rounds)")
-        return {}
+        # Call the callback
+        self.fire_callback(event="on_iteration_end", outputs=outputs)
+        # Set the inputs for the next iteration
+        inputs = {
+            "objectives": outputs["updated_objectives"],
+            "findings": outputs["updated_findings"],
+        }
+
+    self.fire_log(f"Agent finished running ({self.iteration_count} rounds)")
+    return {}
