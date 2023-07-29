@@ -19,6 +19,17 @@ class BlockAGIChain(CustomCallbackLLMChain):
     resource_pool: BaseResourcePool
     tools: List[BaseTool] = []
     callbacks: Optional[List[BaseCallbackHandler]] = None
+    app: Any = None  # Add the app variable
+
+    def __init__(self, app, **kwargs: Any):  # Modify the constructor to accept the app variable
+        super().__init__(**kwargs)
+        self.app = app  # Store the app variable as an instance variable
+        self.chains = [
+            PlanChain(**kwargs),
+            ResearchChain(**kwargs),
+            NarrateChain(**kwargs),
+            EvaluateChain(**kwargs),
+        ]
 
     @property
     def input_keys(self) -> List[str]:

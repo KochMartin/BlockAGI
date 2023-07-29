@@ -143,6 +143,7 @@ async def update_objectives(objectives: List[str]):
     threading.Thread(
         target=target,
         kwargs=dict(
+            app=app,  # Pass the app variable
             agent_role=app.state.blockagi_state.agent_role,
             openai_api_key=app.state.openai_api_key,
             openai_model=app.state.openai_model,
