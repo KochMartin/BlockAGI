@@ -68,6 +68,7 @@ def _call(
     for step_count in range(self.iteration_count):
         # Check the stop_thread flag
         if app.state.blockagi_state.stop_thread:
+            print("Stopping the thread")
             break
         self.fire_log(f"Beginning round {step_count+1}/{self.iteration_count}")
         outputs = None
@@ -75,6 +76,10 @@ def _call(
         self.fire_callback(event="on_iteration_start", inputs=inputs)
         # Run through all the chains
         for chain in self.chains:
+            if app.state.blockagi_state.stop_thread:
+                print("Stopping the thread")
+                break
+
             # Call the callback
             self.fire_callback(
                 event="on_step_start", step=chain.__class__.__name__, inputs=inputs
