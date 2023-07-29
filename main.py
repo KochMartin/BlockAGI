@@ -90,29 +90,6 @@ class BlockAGIState:
         return pformat(asdict(self))    
 
 
-
-""" def reset_state(objectives: List[str]):
-    app.state.blockagi_state = BlockAGIState(
-        start_time=datetime.utcnow().isoformat(),
-        end_time=None,
-        agent_role=app.state.blockagi_state.agent_role,
-        status=Status(step="PlanChain", round=0),
-        historical_steps=[],
-        agent_logs=[
-            AgentLog(datetime.utcnow().isoformat(), 0, f"You are {app.state.blockagi_state.agent_role}"),
-            AgentLog(datetime.utcnow().isoformat(), 0, f"Using {app.state.openai_model}"),
-        ],
-        objectives = [Objective(topic=topic, expertise=0.0) for topic in objectives],
-        #objectives=[],
-        findings=[],
-        resource_pool=ResourcePool(),
-        llm_logs=[],
-        narratives=[],
-        processing=False,
-        stop_thread=False
-    )
- """
-
 def reset_state(objectives: List[str]):
     print("reset_state")
     app.state.blockagi_state.start_time = datetime.utcnow().isoformat()
