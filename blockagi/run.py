@@ -19,6 +19,7 @@ def run_blockagi(
     blockagi_callback,
     llm_callback,
     iteration_count,
+    app, #added app variable to access state
 ):
     tools = []
     if os.getenv("GOOGLE_API_KEY") and os.getenv("GOOGLE_CSE_ID"):
@@ -63,4 +64,5 @@ def run_blockagi(
         tools=tools,
         resource_pool=resource_pool,
         callbacks=[blockagi_callback],
+        app=app, #pass the app variable
     )(inputs=inputs)
