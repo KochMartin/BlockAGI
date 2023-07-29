@@ -70,6 +70,7 @@ class BlockAGIChain(CustomCallbackLLMChain):
             # Check the stop_thread flag
             if self.app.state.blockagi_state.stop_thread:
                 print("Stopping the thread")
+                self.fire_log("Stopping research ...")
                 break
             self.fire_log(f"Beginning round {step_count+1}/{self.iteration_count}")
             outputs = None
@@ -79,6 +80,7 @@ class BlockAGIChain(CustomCallbackLLMChain):
             for chain in self.chains:
                 if self.app.state.blockagi_state.stop_thread:
                     print("Stopping the thread")
+                    self.fire_log("Stopping research ...")
                     break
 
                 # Call the callback
@@ -101,8 +103,8 @@ class BlockAGIChain(CustomCallbackLLMChain):
             self.fire_callback(event="on_iteration_end", outputs=outputs)
             # Set the inputs for the next iteration
             inputs = {
-                "objectives": outputs["updated_objectives"],
-                "findings": outputs["updated_findings"],
+                "objectives": outputs.get("updated_objectives", []),
+                "findings": outputs.get("updated_findings", []),
             }
 
         self.fire_log(f"Agent finished running ({self.iteration_count} rounds)")

@@ -115,6 +115,16 @@ def reset_state(objectives: List[str]):
 async def reset():
     reset_state()
 
+@app.post("/api/pause")
+async def stop_research():
+    app.state.blockagi_state.stop_thread = True
+
+@app.post("/api/stop")
+async def stop_research():
+    app.state.blockagi_state.stop_thread = True
+    reset_state(objectives=[])
+
+
 
 @app.post("/api/objectives")
 async def update_objectives(objectives: List[str]):
@@ -154,10 +164,6 @@ async def update_objectives(objectives: List[str]):
             iteration_count=app.state.iteration_count,
         ),
     ).start()
-
-@app.post("/api/stop")
-async def stop_research():
-    app.state.blockagi_state.stop_thread = True
 
 
 app.mount("/", StaticFiles(directory="dist"), name="dist")
@@ -216,7 +222,9 @@ class LLMCallback(BaseCallbackHandler):
         )
 
     def on_llm_new_token(self, token: str, **kwargs):
-        self.state.llm_logs[-1].response += token
+        if self.state.llm_logs:
+            self.state.llm_logs[-1].response += token
+
 
 
 def main(
