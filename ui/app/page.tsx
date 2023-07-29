@@ -695,7 +695,7 @@ function Narrative() {
       const newData = await fetchData();
       if (newData) setData(newData);
       else setData((prevData) => ({ ...prevData, is_live: false }));
-    }, 500); // 500ms instead of 200ms to reduce API calls
+    }, 200); // 500ms instead of 200ms to reduce API calls
     return () => clearInterval(interval);
   }, []);
 
