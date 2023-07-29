@@ -132,14 +132,13 @@ async def update_objectives(objectives: List[str]):
     def target(**kwargs):
         app.state.blockagi_state.stop_thread = False # we are starting a new thread, so set the stop_thread flag to False
         try:
-            #do we need this? app.state.blockagi_state.stop_thread:  # Check the stop_thread flag
+            while not app.state.blockagi_state.stop_thread:  # Check the stop_thread flag
                 run_blockagi(**kwargs)
         except Exception as e:
             app.state.blockagi_state.add_agent_log(f"Error: {e}")
         finally:
             app.state.blockagi_state.end_time = datetime.utcnow().isoformat()
             app.state.blockagi_state.processing = False  # Set the processing flag to False when processing is done
-            #app.state.blockagi_state.stop_thread = True  
 
     # Start a new thread to run the Research
     threading.Thread(
@@ -155,6 +154,10 @@ async def update_objectives(objectives: List[str]):
             iteration_count=app.state.iteration_count,
         ),
     ).start()
+
+@app.post("/api/stop")
+async def stop_research():
+    app.state.blockagi_state.stop_thread = True
 
 
 app.mount("/", StaticFiles(directory="dist"), name="dist")
